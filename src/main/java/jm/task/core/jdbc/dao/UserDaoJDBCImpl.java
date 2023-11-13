@@ -18,7 +18,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void createUsersTable() throws SQLException {
 
-        String create = "CREATE TABLE IF NOT EXISTS user (id BIGINT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), lastname VARCHAR(255), age INT);";
+        String create = "CREATE TABLE IF NOT EXISTS user (id BIGINT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), lastname VARCHAR(255), age TINYINT);";
 
 
         try {
@@ -77,25 +77,19 @@ public class UserDaoJDBCImpl implements UserDao {
         List<User> users = new ArrayList<>();
         String getAll = "SELECT * FROM user";
 
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(getAll);
-            preparedStatement.execute();
-
-            ResultSet resultSet = preparedStatement.getResultSet();
+        try (Connection connection = Util.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(getAll);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
                 User user = new User(resultSet.getString("name"),
                         resultSet.getString("lastName"),
                         resultSet.getByte("age"));
-
                 user.setId(resultSet.getLong("id"));
-
                 users.add(user);
-
-                connection.commit();
             }
-        }catch (SQLException s) {
-            s.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return users;
     }
